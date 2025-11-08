@@ -91,8 +91,7 @@
             border: 1px solid var(--border-color);
             padding: 16px;
             text-align: left;
-            /* ***** CAMBIO DE CSS ***** */
-            vertical-align: top; /* Cambiado de 'middle' a 'top' para alinear mejor */
+            vertical-align: top; /* Ajustado para alinear bien los nombres */
         }
         .activity-table th {
             background-color: #f8f9fa;
@@ -102,7 +101,7 @@
              background-color: var(--surface-color);
         }
         
-        /* ***** NUEVO ESTILO CSS ***** */
+        /* Estilo para la lista de evaluadores en la tarjeta de alumno */
         .activity-table .evaluators-list {
             font-size: 0.9em;
             color: var(--text-muted);
@@ -131,8 +130,9 @@
         .admin-controls button { margin-top: 10px; margin-right: 10px; padding: 10px 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
         .admin-controls button.secondary { background-color: var(--secondary-color); font-size: 16px; width: 100%; margin-top: 20px; }
 
+        /* ***** CAMBIO DE CSS: Ajustado para 3 columnas en pantallas grandes ***** */
         .staff-grid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 25px;}
-        @media (min-width: 768px) { .staff-grid { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 992px) { .staff-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
         .admin-card {
              background-color: var(--background-color);
@@ -142,9 +142,7 @@
         }
         .admin-card h4 { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
 
-        /* ***** CAMBIO DE CSS ***** */
-        .admin-table-wrapper { max-height: none; overflow: visible; } /* Se quitó el scroll */
-        
+        .admin-table-wrapper { max-height: 400px; overflow: auto; }
         .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .admin-table th, .admin-table td { border: 1px solid var(--border-color); padding: 12px; text-align: left; white-space: nowrap; }
         .admin-table th { background-color: #e9ecef; position: sticky; top: 0; font-weight: 600; }
@@ -198,6 +196,13 @@
                         <button id="add-expositor-btn">Añadir Expositor</button>
                     </div>
                 </div>
+                <div class="admin-card" id="staff-editor-evaluators">
+                    <h4>Evaluadores de Pitch</h4>
+                    <div class="admin-table-wrapper" id="evaluators-table-container"></div>
+                    <div class="admin-controls">
+                        <button id="add-evaluator-btn">Añadir Evaluador</button>
+                    </div>
+                </div>
             </div>
 
             <div class="admin-controls">
@@ -225,6 +230,10 @@
             const addInterviewerBtn = document.getElementById('add-interviewer-btn');
             const expositorsTableContainer = document.getElementById('expositors-table-container');
             const addExpositorBtn = document.getElementById('add-expositor-btn');
+            // ***** NUEVO DOM ELEMENT *****
+            const evaluatorsTableContainer = document.getElementById('evaluators-table-container');
+            const addEvaluatorBtn = document.getElementById('add-evaluator-btn');
+
 
             // ==============================================================================
             // BASE DE DATOS INICIAL COMPLETA (Basada en TALENT CAMP 3.0.pdf)
@@ -266,7 +275,7 @@
                     // --- Equipo 6 (Lechuga) ---
                     { id: '563340', name: 'Sánchez Dominguez Santiago', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 9, networkingTime: '11:00-11:35', expositor: 3 },
                     { id: '441251', name: 'Soriano Vergara Pedro', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 10, networkingTime: '11:00-11:35', expositor: 4 },
-                    { id: '535961', name: 'Torres Sánchez Luis Carlos', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 4, networkingTime: '11:00-11:35', expositor: 5 }, // Corregido 'S' a 5
+                    { id: '535961', name: 'Torres Sánchez Luis Carlos', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 4, networkingTime: '11:00-11:35', expositor: 5 },
                     { id: '557721', name: 'Vega Ibarra Angel Abraham', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 5, networkingTime: '11:00-11:35', expositor: 1 },
                     { id: '571014', name: 'Zermeño Sánchez Tonatiuh', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 6, networkingTime: '11:00-11:35', expositor: 2 },
                     // --- Equipo 7 (Luna) ---
@@ -336,10 +345,11 @@
 
                 loadInitialData();
                 searchInput.addEventListener('input', handleSearch);
-                addStudentBtn.addEventListener('click', () => addRowToTable('admin-table'));
-                addInterviewerBtn.addEventListener('click', () => addRowToTable('interviewers-table'));
-                addExpositorBtn.addEventListener('click', () => addRowToTable('expositors-table'));
-                saveDataBtn.addEventListener('click', saveAndProcessData);
+                addStudentBtn.addEventListener('click', () => addRowToTable('admin-table', ['id', 'name', 'profesor', 'team', 'presentationTime', 'sala', 'interviewTime', 'entrevistador', 'networkingTime', 'expositor']));
+                addInterviewerBtn.addEventListener('click', () => addRowToTable('interviewers-table', ['id', 'name']));
+                addExpositorBtn.addEventListener('click', () => addRowToTable('expositors-table', ['id', 'name']));
+                // ***** NUEVO EVENT LISTENER *****
+                addEvaluatorBtn.addEventListener('click', () => addRowToTable('evaluators-table', ['sala', 'name']));
 
                 configSection.addEventListener('click', (e) => {
                     if (e.target.classList.contains('delete-row-btn')) {
@@ -365,15 +375,16 @@
 
             function renderAdminTables(data) {
                 renderStudentTable(data.students);
-                renderStaffTable('interviewers-table-container', data.interviewers, ['ID', 'Nombre']);
-                renderStaffTable('expositors-table-container', data.expositors, ['ID', 'Nombre']);
-                // Aquí podrías añadir una tabla para editar evaluadores si quisieras
+                // ***** LLAMADAS A RENDER STAFF ACTUALIZADAS *****
+                renderStaffTable('interviewers-table-container', 'interviewers-table', data.interviewers, ['ID', 'Nombre'], ['id', 'name']);
+                renderStaffTable('expositors-table-container', 'expositors-table', data.expositors, ['ID', 'Nombre'], ['id', 'name']);
+                renderStaffTable('evaluators-table-container', 'evaluators-table', data.evaluators, ['Sala', 'Nombre'], ['sala', 'name']);
             }
 
             function renderStudentTable(studentList) {
                 const table = document.createElement('table');
                 table.id = 'admin-table';
-                table.classList.add('admin-table'); // Añadir clase para estilos
+                table.classList.add('admin-table'); 
                 table.innerHTML = `
                     <thead>
                         <tr>
@@ -401,17 +412,18 @@
                 adminTableContainer.appendChild(table);
             }
 
-            function renderStaffTable(containerId, staffList, headers) {
+            // ***** FUNCIÓN RENDER STAFF ACTUALIZADA *****
+            function renderStaffTable(containerId, tableId, staffList, headers, keys) {
                 const container = document.getElementById(containerId);
                 const table = document.createElement('table');
-                table.id = containerId.replace('-container', '');
-                table.classList.add('admin-table'); // Añadir clase para estilos
+                table.id = tableId;
+                table.classList.add('admin-table'); 
                 table.innerHTML = `
                     <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}<th>Acción</th></tr></thead>
                     <tbody>
                         ${staffList.map(item => `
                             <tr>
-                                ${headers.map(h => `<td contenteditable="true">${item[h.toLowerCase()]}</td>`).join('')}
+                                ${keys.map(k => `<td contenteditable="true">${item[k] || ''}</td>`).join('')}
                                 <td><button class="delete-row-btn">&times;</button></td>
                             </tr>`).join('')}
                     </tbody>`;
@@ -419,28 +431,30 @@
                 container.appendChild(table);
             }
 
-            function addRowToTable(tableId) {
+            // ***** FUNCIÓN ADD ROW ACTUALIZADA *****
+            function addRowToTable(tableId, keys) {
                 const tableBody = document.querySelector(`#${tableId} tbody`);
                 if (!tableBody) return;
                 const newRow = tableBody.insertRow();
-                const cellCount = tableBody.rows[0]?.cells.length || 2;
-                for (let i = 0; i < cellCount - 1; i++) {
+                // Usar la longitud de keys para saber cuántas celdas crear
+                for (let i = 0; i < keys.length; i++) {
                     newRow.insertCell().setAttribute('contenteditable', 'true');
                 }
                 newRow.insertCell().innerHTML = '<button class="delete-row-btn">&times;</button>';
             }
 
+            // ***** FUNCIÓN SAVE DATA ACTUALIZADA *****
             function saveAndProcessData() {
                 const studentList = getTableData('admin-table', ['id', 'name', 'profesor', 'team', 'presentationTime', 'sala', 'interviewTime', 'entrevistador', 'networkingTime', 'expositor']);
                 const interviewersList = getTableData('interviewers-table', ['id', 'name']);
                 const expositorsList = getTableData('expositors-table', ['id', 'name']);
-                // Faltaría guardar evaluadores si se hacen editables
+                const evaluatorsList = getTableData('evaluators-table', ['sala', 'name']);
                 
                 const masterData = {
                     students: studentList,
                     interviewers: interviewersList,
                     expositors: expositorsList,
-                    evaluators: initialMasterData.evaluators // Por ahora mantenemos los iniciales
+                    evaluators: evaluatorsList // Guardar los datos de la nueva tabla
                 };
 
                 localStorage.setItem(MASTER_DATA_KEY, JSON.stringify(masterData));
@@ -452,11 +466,12 @@
                 const tableRows = document.querySelectorAll(`#${tableId} tbody tr`);
                 tableRows.forEach(row => {
                     const cells = row.querySelectorAll('td');
+                    if (cells.length === 0) return; // Omitir filas vacías
+                    
                     const item = {};
                     keys.forEach((key, i) => {
                         let value = cells[i]?.textContent.trim() || '';
-                        // Convertir a número si es relevante, o null si está vacío
-                        if (key === 'team' || key === 'entrevistador' || key === 'expositor') {
+                        if (key === 'team' || key === 'entrevistador' || key === 'expositor' || key === 'id') {
                             item[key] = value === '' ? null : parseInt(value) || value; 
                         } else {
                             item[key] = value;
@@ -470,7 +485,7 @@
             function cleanTime(timeStr) {
                 if (!timeStr || !timeStr.includes('-')) return null;
                 
-                let [startStr, endStr] = timeStr.split('-').map(s => s.trim().replace(/:/g, '')); // Quita : y espacios
+                let [startStr, endStr] = timeStr.split('-').map(s => s.trim().replace(/:/g, '')); 
                 
                 if (startStr.length === 3) startStr = `0${startStr}`;
                 if (endStr.length === 3) endStr = `0${endStr}`;
@@ -478,7 +493,7 @@
                 if (startStr.length === 4) startStr = `${startStr.slice(0, 2)}:${startStr.slice(2)}`;
                 if (endStr.length === 4) endStr = `${endStr.slice(0, 2)}:${endStr.slice(2)}`;
 
-                if (!startStr.includes(':') || !endStr.includes(':')) return null; // No válida
+                if (!startStr.includes(':') || !endStr.includes(':')) return null; 
                 
                 return `${startStr} - ${endStr}`;
             }
@@ -488,10 +503,15 @@
                 const interviewersMap = new Map(data.interviewers.map(i => [i.id.toString(), i.name]));
                 const expositorsMap = new Map(data.expositors.map(e => [e.id.toString(), e.name]));
                 
-                // ***** NUEVO MAPA DE EVALUADORES *****
+                // ***** MAPA DE EVALUADORES ACTUALIZADO *****
                 const evaluatorsMap = new Map();
-                evaluatorsMap.set('A', data.evaluators.filter(e => e.sala === 'A').map(e => e.name).join('<br>'));
-                evaluatorsMap.set('B', data.evaluators.filter(e => e.sala === 'B').map(e => e.name).join('<br>'));
+                // Agrupa a todos los evaluadores por sala
+                data.evaluators.forEach(e => {
+                    if (!evaluatorsMap.has(e.sala)) {
+                        evaluatorsMap.set(e.sala, []);
+                    }
+                    evaluatorsMap.get(e.sala).push(e.name);
+                });
 
                 data.students.forEach(studentInfo => {
                     const studentActivities = [];
@@ -526,8 +546,11 @@
                     }
 
                     // ***** LÓGICA DE PRESENTACIÓN ACTUALIZADA *****
-                    const presentationEvaluators = evaluatorsMap.get(studentInfo.sala) || 'N/A';
-                    const presentationLocation = `<b>Sala de Pitch ${studentInfo.sala}</b><div class="evaluators-list">Evalúan:<br>${presentationEvaluators}</div>`;
+                    const evaluatorNames = evaluatorsMap.get(studentInfo.sala);
+                    let presentationLocation = `<b>Sala de Pitch ${studentInfo.sala}</b>`;
+                    if (evaluatorNames && evaluatorNames.length > 0) {
+                        presentationLocation += `<div class="evaluators-list">Evalúan:<br>${evaluatorNames.join('<br>')}</div>`;
+                    }
 
                     createActivity(studentInfo.presentationTime, 'Presentación de Proyectos', presentationLocation);
                     createActivity(studentInfo.networkingTime, 'Mesa con Expositores', `Con: ${expositorName}`);
@@ -629,8 +652,10 @@
             }
 
             function generateGoogleCalendarUrl(activity) {
+                // ***** CORRECCIÓN: Limpiar HTML de la locación para la URL *****
+                const cleanLocation = activity.location.replace(/<[^>]*>?/gm, ' '); // Quita tags HTML
                 const text = encodeURIComponent(activity.title);
-                const location = encodeURIComponent(activity.location);
+                const location = encodeURIComponent(cleanLocation);
                 const details = encodeURIComponent(`Itinerario para ${activity.studentName}`);
                 const dates = `${formatICSDate(new Date(activity.start))}/${formatICSDate(new Date(activity.end))}`;
                 return `https://www.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${dates}&location=${location}&details=${details}`;
