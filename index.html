@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talent Camp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #6c757d;
+            --background-color: #f4f4f9;
+            --surface-color: #ffffff;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --border-color: #e5e5e5;
+            --team-color: #34c759;
+            --danger-color: #dc3545;
+            --border-radius: 12px;
+            --shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px; /* Aumentado para el panel de admin */
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .main-card {
+            background-color: var(--surface-color);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            max-width: 800px; /* Mantenemos el ancho para la vista de alumno */
+            margin: 0 auto;
+        }
+
+        .search-section { margin-bottom: 15px; position: relative; }
+        .search-section .icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 20px; height: 20px; }
+
+        #search-input {
+            width: 100%; padding: 12px 15px 12px 45px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-size: 16px;
+            background-color: var(--background-color); color: var(--text-color);
+        }
+        #search-input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2); }
+
+        .student-card {
+            background-color: var(--background-color); border: 1px solid var(--border-color); border-radius: var(--border-radius);
+            margin-top: 20px; padding: 20px;
+        }
+        .student-card-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+        .student-card h3 { margin: 0; color: var(--text-color); font-weight: 600; }
+        .student-card .student-id { color: var(--text-muted); font-size: 0.9em; font-family: monospace; }
+        .student-card .student-prof { color: var(--text-muted); font-size: 0.9em; } /* Estilo para el profesor */
+
+
+        .student-team {
+            padding: 5px 10px; border-radius: 15px; color: white; font-size: 0.8em; font-weight: 500; background-color: var(--team-color);
+        }
+
+        .activity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .activity-table th, .activity-table td {
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            text-align: left;
+            /* ***** CAMBIO DE CSS ***** */
+            vertical-align: top; /* Cambiado de 'middle' a 'top' para alinear mejor */
+        }
+        .activity-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .activity-table td {
+             background-color: var(--surface-color);
+        }
+        
+        /* ***** NUEVO ESTILO CSS ***** */
+        .activity-table .evaluators-list {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+
+        .activity-actions .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .activity-actions .btn:hover { background-color: #005bb5; }
+
+        .config-section { display: none; margin-top: 20px; padding: 20px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background-color: var(--surface-color); }
+        .admin-controls button { margin-top: 10px; margin-right: 10px; padding: 10px 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .admin-controls button.secondary { background-color: var(--secondary-color); font-size: 16px; width: 100%; margin-top: 20px; }
+
+        .staff-grid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 25px;}
+        @media (min-width: 768px) { .staff-grid { grid-template-columns: 1fr 1fr; } }
+
+        .admin-card {
+             background-color: var(--background-color);
+             padding: 20px;
+             border-radius: var(--border-radius);
+             border: 1px solid var(--border-color);
+        }
+        .admin-card h4 { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
+
+        /* ***** CAMBIO DE CSS ***** */
+        .admin-table-wrapper { max-height: none; overflow: visible; } /* Se quitó el scroll */
+        
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .admin-table th, .admin-table td { border: 1px solid var(--border-color); padding: 12px; text-align: left; white-space: nowrap; }
+        .admin-table th { background-color: #e9ecef; position: sticky; top: 0; font-weight: 600; }
+        .admin-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        .admin-table td[contenteditable="true"] { background-color: #fff9e0; }
+        .admin-table .delete-row-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; font-size: 20px; line-height: 1; }
+        #admin-status { margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; font-weight: 500; display: none; background-color: var(--team-color); color: white; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Talent Camp</h1>
+        </header>
+
+        <main class="main-card">
+            <h2>Asistente de Itinerario</h2>
+            <div class="search-section">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="search" id="search-input" placeholder="Busca por ID o nombre..." disabled>
+            </div>
+            <div id="results-container">
+                <p>Cargando datos del evento...</p>
+            </div>
+        </main>
+
+
+        <div class="config-section">
+            <h3>Panel de Administración</h3>
+            <div class="admin-card" id="student-editor">
+                <h4>Editor de Alumnos y Horarios</h4>
+                <div class="admin-table-wrapper" id="admin-table-container"></div>
+                <div class="admin-controls">
+                    <button id="add-student-btn">Añadir Alumno</button>
+                </div>
+            </div>
+
+            <div class="staff-grid">
+                <div class="admin-card" id="staff-editor-interviewers">
+                    <h4>Entrevistadores</h4>
+                    <div class="admin-table-wrapper" id="interviewers-table-container"></div>
+                    <div class="admin-controls">
+                        <button id="add-interviewer-btn">Añadir Entrevistador</button>
+                    </div>
+                </div>
+                <div class="admin-card" id="staff-editor-expositors">
+                    <h4>Expositores</h4>
+                    <div class="admin-table-wrapper" id="expositors-table-container"></div>
+                    <div class="admin-controls">
+                        <button id="add-expositor-btn">Añadir Expositor</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-controls">
+                <button id="save-data-btn" class="secondary">Guardar Todos los Cambios</button>
+            </div>
+            <div id="admin-status"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let students = {};
+            const TIMEZONE = 'America/Mexico_City';
+            const MASTER_DATA_KEY = 'talentCampMasterData_v3'; // Llave actualizada
+
+            // DOM Elements
+            const searchInput = document.getElementById('search-input');
+            const resultsContainer = document.getElementById('results-container');
+            const configSection = document.querySelector('.config-section');
+            const adminTableContainer = document.getElementById('admin-table-container');
+            const addStudentBtn = document.getElementById('add-student-btn');
+            const saveDataBtn = document.getElementById('save-data-btn');
+            const adminStatus = document.getElementById('admin-status');
+            const interviewersTableContainer = document.getElementById('interviewers-table-container');
+            const addInterviewerBtn = document.getElementById('add-interviewer-btn');
+            const expositorsTableContainer = document.getElementById('expositors-table-container');
+            const addExpositorBtn = document.getElementById('add-expositor-btn');
+
+            // ==============================================================================
+            // BASE DE DATOS INICIAL COMPLETA (Basada en TALENT CAMP 3.0.pdf)
+            // ==============================================================================
+            const initialMasterData = {
+                students: [
+                    // --- Equipo 1 (Del Rio) ---
+                    { id: '578939', name: 'Bello Martinez Emiliano', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '9:55-10:15', entrevistador: 1, networkingTime: '10:25-11:00', expositor: 1 },
+                    { id: '524719', name: 'de la Rosa Burgos Alvaro Alejandro', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '9:55-10:15', entrevistador: 2, networkingTime: '10:25-11:00', expositor: 2 },
+                    { id: '523828', name: 'Diaz Mayo José Pablo', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '9:55-10:15', entrevistador: 3, networkingTime: '10:25-11:00', expositor: 3 },
+                    { id: '497686', name: 'Jiménez Gómez Omar Michel', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '9:55-10:15', entrevistador: 4, networkingTime: '10:25-11:00', expositor: 4 },
+                    { id: '464515', name: 'Monterrosas Mirón Karla Antonia', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '9:55-10:15', entrevistador: 5, networkingTime: '10:25-11:00', expositor: 5 },
+                    { id: '545786', name: 'Peniche Pérez Esteban', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 1, networkingTime: '10:25-11:00', expositor: 1 },
+                    { id: '525597', name: 'Tejeda Flores Zara Valentina', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 2, networkingTime: '10:25-11:00', expositor: 2 },
+                    // --- Equipo 2 (Lechuga) ---
+                    { id: '543019', name: 'Briones Quiyono Ana Sofia', profesor: 'Lechuga', team: 2, presentationTime: '9:15-9:35', sala: 'B', interviewTime: '9:55-10:15', entrevistador: 6, networkingTime: '10:25-11:00', expositor: 3 },
+                    { id: '530047', name: 'Camarillo Sánchez Juan Alberto', profesor: 'Lechuga', team: 2, presentationTime: '9:15-9:35', sala: 'B', interviewTime: '9:55-10:15', entrevistador: 7, networkingTime: '10:25-11:00', expositor: 4 },
+                    { id: '562237', name: 'Campuzano Silva Monserrat', profesor: 'Lechuga', team: 2, presentationTime: '9:15-9:35', sala: 'B', interviewTime: '9:55-10:15', entrevistador: 8, networkingTime: '10:25-11:00', expositor: 5 },
+                    { id: '549936', name: 'Enriquez Colchado Emilio', profesor: 'Lechuga', team: 2, presentationTime: '9:15-9:35', sala: 'B', interviewTime: '9:55-10:15', entrevistador: 9, networkingTime: '10:25-11:00', expositor: 1 },
+                    { id: '571685', name: 'Félix Aizpuru Maximiliano', profesor: 'Lechuga', team: 2, presentationTime: '9:15-9:35', sala: 'B', interviewTime: '9:55-10:15', entrevistador: 10, networkingTime: '10:25-11:00', expositor: 2 },
+                    // --- Equipo 3 (Lechuga) ---
+                    { id: '574765', name: 'Flores Arcos Jesús Amauri', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '9:15-9:35', entrevistador: 1, networkingTime: '10:25-11:00', expositor: 3 },
+                    { id: '543066', name: 'Forcelledo Bledi Carlota', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '9:15-9:35', entrevistador: 2, networkingTime: '10:25-11:00', expositor: 4 },
+                    { id: '569121', name: 'Garrido del Valle Emiliano', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '9:15-9:35', entrevistador: 3, networkingTime: '10:25-11:00', expositor: 5 },
+                    { id: '493870', name: 'Gutiérrez Jiménez Jael Ricardo', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 3, networkingTime: '11:00-11:35', expositor: null },
+                    { id: '492520', name: 'Hernández López Francisco', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 4, networkingTime: '11:00-11:35', expositor: 2 },
+                    // --- Equipo 4 (Lechuga) ---
+                    { id: '531714', name: 'Jiménez González Victor Manuel', profesor: 'Lechuga', team: 4, presentationTime: '9:40-10:00', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 4, networkingTime: '10:25-11:00', expositor: 3 },
+                    { id: '571883', name: 'Limón Mata Alexa', profesor: 'Lechuga', team: 4, presentationTime: '9:40-10:00', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 5, networkingTime: '10:25-11:00', expositor: 4 },
+                    { id: '544679', name: 'Lira González Adalberto', profesor: 'Lechuga', team: 4, presentationTime: '9:40-10:00', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 6, networkingTime: '10:25-11:00', expositor: 5 },
+                    { id: '552509', name: 'Moreno Flores Karen Ayari', profesor: 'Lechuga', team: 4, presentationTime: '9:40-10:00', sala: 'B', interviewTime: '10:15-10:35', entrevistador: 5, networkingTime: '11:00-11:35', expositor: null },
+                    { id: '557695', name: 'Navarrete Flores Emiliano', profesor: 'Lechuga', team: 4, presentationTime: '9:40-10:00', sala: 'B', interviewTime: '10:15-10:35', entrevistador: 6, networkingTime: '11:00-11:35', expositor: 2 },
+                    // --- Equipo 5 (Lechuga) ---
+                    { id: '582580', name: 'Olaya Camela Claudia', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:15-9:35', entrevistador: 7, networkingTime: '11:00-11:35', expositor: 3 },
+                    { id: '495238', name: 'Pineda Bello lan Miguel', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:15-9:35', entrevistador: 8, networkingTime: '11:00-11:35', expositor: 4 },
+                    { id: '561988', name: 'Ramirez Vera Kevin Samuel', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 1, networkingTime: '11:00-11:35', expositor: 5 },
+                    { id: '550267', name: 'Saint Martin Sosa Diego', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 2, networkingTime: '11:00-11:35', expositor: 1 },
+                    { id: '508475', name: 'Salazar Huerta Rodrigo', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 3, networkingTime: '11:00-11:35', expositor: 2 },
+                    // --- Equipo 6 (Lechuga) ---
+                    { id: '563340', name: 'Sánchez Dominguez Santiago', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 9, networkingTime: '11:00-11:35', expositor: 3 },
+                    { id: '441251', name: 'Soriano Vergara Pedro', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 10, networkingTime: '11:00-11:35', expositor: 4 },
+                    { id: '535961', name: 'Torres Sánchez Luis Carlos', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 4, networkingTime: '11:00-11:35', expositor: 5 }, // Corregido 'S' a 5
+                    { id: '557721', name: 'Vega Ibarra Angel Abraham', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 5, networkingTime: '11:00-11:35', expositor: 1 },
+                    { id: '571014', name: 'Zermeño Sánchez Tonatiuh', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 6, networkingTime: '11:00-11:35', expositor: 2 },
+                    // --- Equipo 7 (Luna) ---
+                    { id: '565156', name: 'Alonso Farfan Mikel Javier', profesor: 'Luna', team: 7, presentationTime: '10:30-10:50', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 7, networkingTime: '9:50-10:25', expositor: 1 },
+                    { id: '382999', name: 'Alvarez Santiago Cristhian Rafael', profesor: 'Luna', team: 7, presentationTime: '10:30-10:50', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 8, networkingTime: '9:50-10:25', expositor: 2 },
+                    { id: '549581', name: 'Arroyo Vargas Hanna Janette', profesor: 'Luna', team: 7, presentationTime: '10:30-10:50', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 9, networkingTime: '9:50-10:25', expositor: 3 },
+                    { id: '569010', name: 'Aymerich Bringas José Luis', profesor: 'Luna', team: 7, presentationTime: '10:30-10:50', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 10, networkingTime: '9:50-10:25', expositor: 4 },
+                    { id: '433549', name: 'Colmeriares Barrera Bruno', profesor: 'Luna', team: 7, presentationTime: '10:30-10:50', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 7, networkingTime: '9:50-10:25', expositor: 5 },
+                    // --- Equipo 8 (Luna) ---
+                    { id: '576469', name: 'Cruz Cruz Daira', profesor: 'Luna', team: 8, presentationTime: '10:30-10:50', sala: 'B', interviewTime: '10:15-10:35', entrevistador: 8, networkingTime: '9:50-10:25', expositor: 1 },
+                    { id: '527134', name: 'Deloya González Guillermo', profesor: 'Luna', team: 8, presentationTime: '10:30-10:50', sala: 'B', interviewTime: '10:15-10:35', entrevistador: 9, networkingTime: '9:50-10:25', expositor: 2 },
+                    { id: '589649', name: 'Espejel Ramos Diego', profesor: 'Luna', team: 8, presentationTime: '10:30-10:50', sala: 'B', interviewTime: '10:15-10:35', entrevistador: 10, networkingTime: '9:50-10:25', expositor: 3 },
+                    { id: '563562', name: 'Garcia Romero Antonio Salvador', profesor: 'Luna', team: 8, presentationTime: '10:30-10:50', sala: 'B', interviewTime: '10:35-10:55', entrevistador: 1, networkingTime: '9:50-10:25', expositor: 4 },
+                    { id: '561018', name: 'Gómez Sobrino José Luis', profesor: 'Luna', team: 8, presentationTime: '10:30-10:50', sala: 'B', interviewTime: '10:35-10:55', entrevistador: 2, networkingTime: '9:50-10:25', expositor: 5 },
+                    // --- Equipo 9 (Luna) ---
+                    { id: '558588', name: 'Huerta Mendoza Raúl', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 3, networkingTime: '9:15-9:50', expositor: 1 },
+                    { id: '476946', name: 'Merlin Hernández Aishly Ximena', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 4, networkingTime: '9:15-9:50', expositor: 2 },
+                    { id: '588640', name: 'Monroy Garcia Misael Matias', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 5, networkingTime: '9:15-9:50', expositor: 3 },
+                    { id: '584073', name: 'Ochoa Ramirez Julián', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 6, networkingTime: '9:15-9:50', expositor: 4 },
+                    { id: '560560', name: 'Olvera Quintanar Mario Santiago', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 7, networkingTime: '9:15-9:50', expositor: 5 },
+                    // --- Equipo 10 (Luna) ---
+                    { id: '449964', name: 'Ortega Rosario Erika Gabriela', profesor: 'Luna', team: 10, presentationTime: '10:55-11:15', sala: 'B', interviewTime: '10:35-10:55', entrevistador: 8, networkingTime: '9:15-9:50', expositor: 1 },
+                    { id: '571035', name: 'Osorio Vázquez Laura', profesor: 'Luna', team: 10, presentationTime: '10:55-11:15', sala: 'B', interviewTime: '10:35-10:55', entrevistador: 9, networkingTime: '9:15-9:50', expositor: 2 },
+                    { id: '566072', name: 'Payalaf de Gasperin Oscar Daniel', profesor: 'Luna', team: 10, presentationTime: '10:55-11:15', sala: 'B', interviewTime: '10:35-10:55', entrevistador: 10, networkingTime: '9:15-9:50', expositor: 3 },
+                    { id: '483215', name: 'Pérez Amezcua Travis David', profesor: 'Luna', team: 10, presentationTime: '10:55-11:15', sala: 'B', interviewTime: '10:55-11:15', entrevistador: 1, networkingTime: '9:15-9:50', expositor: 4 },
+                    { id: '579993', name: 'Ramirez Castañón Gabriela', profesor: 'Luna', team: 10, presentationTime: '10:55-11:15', sala: 'B', interviewTime: '10:55-11:15', entrevistador: 2, networkingTime: '9:15-9:50', expositor: 5 },
+                    // --- Equipo 11 (Luna) ---
+                    { id: '562176', name: 'Ramírez Hernández José Vladimir', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 3, networkingTime: '9:15-9:50', expositor: null },
+                    { id: '565874', name: 'Ramírez Rodríguez Diego Antonio', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 4, networkingTime: '9:15-9:50', expositor: 2 },
+                    { id: '552919', name: 'Rámos Cano Diego Estevan', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 5, networkingTime: '9:15-9:50', expositor: 3 },
+                    { id: '561342', name: 'Robles Muñiz Valeria', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 6, networkingTime: '9:15-9:50', expositor: 4 },
+                    { id: '556562', name: 'Rodriguez Romero Mayte', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 7, networkingTime: '9:15-9:50', expositor: 5 },
+                    // --- Equipo 12 (Luna) ---
+                    { id: '514530', name: 'Rojas Garcia Lucia', profesor: 'Luna', team: 12, presentationTime: '11:20-11:40', sala: 'B', interviewTime: '10:55-11:15', entrevistador: 8, networkingTime: '9:15-9:50', expositor: 1 },
+                    { id: '552094', name: 'Sánchez Rojas Emanuel', profesor: 'Luna', team: 12, presentationTime: '11:20-11:40', sala: 'B', interviewTime: '10:55-11:15', entrevistador: 9, networkingTime: '9:15-9:50', expositor: 2 },
+                    { id: '554124', name: 'Santiago Morales Arantza Gabriela', profesor: 'Luna', team: 12, presentationTime: '11:20-11:40', sala: 'B', interviewTime: '10:55-11:15', entrevistador: 10, networkingTime: '9:15-9:50', expositor: 3 },
+                    { id: '478311', name: 'Torres Arce Emiliano', profesor: 'Luna', team: 12, presentationTime: '11:20-11:40', sala: 'B', interviewTime: '11:15-11:35', entrevistador: 1, networkingTime: '9:15-9:50', expositor: 4 },
+                    { id: '494379', name: 'Vázquez Falcón lan Moisés', profesor: 'Luna', team: 12, presentationTime: '11:20-11:40', sala: 'B', interviewTime: '11:15-11:35', entrevistador: 2, networkingTime: '9:15-9:50', expositor: 5 },
+                ],
+                interviewers: [
+                    { id: 1, name: 'Ricardo Morales' }, { id: 2, name: 'Sofia Castillo' }, { id: 3, name: 'Andrea Jiménez' },
+                    { id: 4, name: 'Jorge Noguez' }, { id: 5, name: 'Fernanda Soto' }, { id: 6, name: 'David Alarcón' },
+                    { id: 7, name: 'Laura Méndez' }, { id: 8, name: 'Carlos Valerio' }, { id: 9, name: 'Lucía Méndez' },
+                    { id: 10, name: 'Alberto Ríos' }
+                ],
+                expositors: [
+                    { id: 1, name: 'ExpoTech' }, { id: 2, name: 'InnovaHub' }, { id: 3, name: 'FutureMinds' },
+                    { id: 4, name: 'Talent Solutions' }, { id: 5, name: 'Creative Spark' }
+                ],
+                // ***** NUEVO MAPA DE EVALUADORES *****
+                evaluators: [
+                    { sala: 'A', name: 'Mónica Cabrera Piña' },
+                    { sala: 'A', name: 'María Lourdes Murrieta' },
+                    { sala: 'B', name: 'Evaluador Sala B-1' }, // <-- CAMBIA ESTE NOMBRE
+                    { sala: 'B', name: 'Evaluador Sala B-2' }  // <-- CAMBIA ESTE NOMBRE
+                ]
+            };
+
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const isAdmin = urlParams.has('admin');
+
+            function initApp() {
+                if (isAdmin) {
+                    configSection.style.display = 'block';
+                }
+
+                loadInitialData();
+                searchInput.addEventListener('input', handleSearch);
+                addStudentBtn.addEventListener('click', () => addRowToTable('admin-table'));
+                addInterviewerBtn.addEventListener('click', () => addRowToTable('interviewers-table'));
+                addExpositorBtn.addEventListener('click', () => addRowToTable('expositors-table'));
+                saveDataBtn.addEventListener('click', saveAndProcessData);
+
+                configSection.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('delete-row-btn')) {
+                        e.target.closest('tr').remove();
+                    }
+                });
+            }
+
+            function loadInitialData() {
+                const savedData = localStorage.getItem(MASTER_DATA_KEY);
+                let data = savedData ? JSON.parse(savedData) : initialMasterData;
+                
+                // Asegurarse de que los datos de evaluadores existan si se carga de localStorage
+                if (!data.evaluators) {
+                    data.evaluators = initialMasterData.evaluators;
+                }
+
+                if (isAdmin) {
+                    renderAdminTables(data);
+                }
+                processSchedules(data);
+            }
+
+            function renderAdminTables(data) {
+                renderStudentTable(data.students);
+                renderStaffTable('interviewers-table-container', data.interviewers, ['ID', 'Nombre']);
+                renderStaffTable('expositors-table-container', data.expositors, ['ID', 'Nombre']);
+                // Aquí podrías añadir una tabla para editar evaluadores si quisieras
+            }
+
+            function renderStudentTable(studentList) {
+                const table = document.createElement('table');
+                table.id = 'admin-table';
+                table.classList.add('admin-table'); // Añadir clase para estilos
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Nombre</th><th>Profesor</th><th>Equipo</th><th>Presentación</th><th>Sala</th><th>Entrevista</th><th>Entrevistador (ID)</th><th>Mesa Redonda</th><th>Expositor (ID)</th><th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${studentList.map(s => `
+                            <tr>
+                                <td contenteditable="true">${s.id}</td>
+                                <td contenteditable="true">${s.name}</td>
+                                <td contenteditable="true">${s.profesor}</td>
+                                <td contenteditable="true">${s.team}</td>
+                                <td contenteditable="true">${s.presentationTime}</td>
+                                <td contenteditable="true">${s.sala}</td>
+                                <td contenteditable="true">${s.interviewTime}</td>
+                                <td contenteditable="true">${s.entrevistador}</td>
+                                <td contenteditable="true">${s.networkingTime}</td>
+                                <td contenteditable="true">${s.expositor !== null ? s.expositor : ''}</td>
+                                <td><button class="delete-row-btn">&times;</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>`;
+                adminTableContainer.innerHTML = '';
+                adminTableContainer.appendChild(table);
+            }
+
+            function renderStaffTable(containerId, staffList, headers) {
+                const container = document.getElementById(containerId);
+                const table = document.createElement('table');
+                table.id = containerId.replace('-container', '');
+                table.classList.add('admin-table'); // Añadir clase para estilos
+                table.innerHTML = `
+                    <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}<th>Acción</th></tr></thead>
+                    <tbody>
+                        ${staffList.map(item => `
+                            <tr>
+                                ${headers.map(h => `<td contenteditable="true">${item[h.toLowerCase()]}</td>`).join('')}
+                                <td><button class="delete-row-btn">&times;</button></td>
+                            </tr>`).join('')}
+                    </tbody>`;
+                container.innerHTML = '';
+                container.appendChild(table);
+            }
+
+            function addRowToTable(tableId) {
+                const tableBody = document.querySelector(`#${tableId} tbody`);
+                if (!tableBody) return;
+                const newRow = tableBody.insertRow();
+                const cellCount = tableBody.rows[0]?.cells.length || 2;
+                for (let i = 0; i < cellCount - 1; i++) {
+                    newRow.insertCell().setAttribute('contenteditable', 'true');
+                }
+                newRow.insertCell().innerHTML = '<button class="delete-row-btn">&times;</button>';
+            }
+
+            function saveAndProcessData() {
+                const studentList = getTableData('admin-table', ['id', 'name', 'profesor', 'team', 'presentationTime', 'sala', 'interviewTime', 'entrevistador', 'networkingTime', 'expositor']);
+                const interviewersList = getTableData('interviewers-table', ['id', 'name']);
+                const expositorsList = getTableData('expositors-table', ['id', 'name']);
+                // Faltaría guardar evaluadores si se hacen editables
+                
+                const masterData = {
+                    students: studentList,
+                    interviewers: interviewersList,
+                    expositors: expositorsList,
+                    evaluators: initialMasterData.evaluators // Por ahora mantenemos los iniciales
+                };
+
+                localStorage.setItem(MASTER_DATA_KEY, JSON.stringify(masterData));
+                processSchedules(masterData);
+            }
+
+            function getTableData(tableId, keys) {
+                const data = [];
+                const tableRows = document.querySelectorAll(`#${tableId} tbody tr`);
+                tableRows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    const item = {};
+                    keys.forEach((key, i) => {
+                        let value = cells[i]?.textContent.trim() || '';
+                        // Convertir a número si es relevante, o null si está vacío
+                        if (key === 'team' || key === 'entrevistador' || key === 'expositor') {
+                            item[key] = value === '' ? null : parseInt(value) || value; 
+                        } else {
+                            item[key] = value;
+                        }
+                    });
+                    data.push(item);
+                });
+                return data;
+            }
+            
+            function cleanTime(timeStr) {
+                if (!timeStr || !timeStr.includes('-')) return null;
+                
+                let [startStr, endStr] = timeStr.split('-').map(s => s.trim().replace(/:/g, '')); // Quita : y espacios
+                
+                if (startStr.length === 3) startStr = `0${startStr}`;
+                if (endStr.length === 3) endStr = `0${endStr}`;
+
+                if (startStr.length === 4) startStr = `${startStr.slice(0, 2)}:${startStr.slice(2)}`;
+                if (endStr.length === 4) endStr = `${endStr.slice(0, 2)}:${endStr.slice(2)}`;
+
+                if (!startStr.includes(':') || !endStr.includes(':')) return null; // No válida
+                
+                return `${startStr} - ${endStr}`;
+            }
+
+            function processSchedules(data) {
+                students = {};
+                const interviewersMap = new Map(data.interviewers.map(i => [i.id.toString(), i.name]));
+                const expositorsMap = new Map(data.expositors.map(e => [e.id.toString(), e.name]));
+                
+                // ***** NUEVO MAPA DE EVALUADORES *****
+                const evaluatorsMap = new Map();
+                evaluatorsMap.set('A', data.evaluators.filter(e => e.sala === 'A').map(e => e.name).join('<br>'));
+                evaluatorsMap.set('B', data.evaluators.filter(e => e.sala === 'B').map(e => e.name).join('<br>'));
+
+                data.students.forEach(studentInfo => {
+                    const studentActivities = [];
+
+                    const createActivity = (timeRange, title, location) => {
+                        const cleanedTime = cleanTime(timeRange); 
+                        if (!cleanedTime) return; 
+
+                        const [startStr, endStr] = cleanedTime.split('-').map(s => s.trim());
+                        const [startH, startM] = startStr.split(':');
+                        const [endH, endM] = endStr.split(':');
+
+                        const startDate = new Date();
+                        startDate.setHours(parseInt(startH), parseInt(startM), 0, 0);
+
+                        const endDate = new Date();
+                        endDate.setHours(parseInt(endH), parseInt(endM), 0, 0);
+
+                        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return; 
+
+                        studentActivities.push({ title, location, start: startDate.toISOString(), end: endDate.toISOString() });
+                    };
+
+                    const entrevistadorIdStr = studentInfo.entrevistador ? studentInfo.entrevistador.toString() : '';
+                    const expositorIdStr = studentInfo.expositor ? studentInfo.expositor.toString() : '';
+
+                    const interviewerName = interviewersMap.get(entrevistadorIdStr) || `Entrevistador #${entrevistadorIdStr}`;
+                    let expositorName = expositorsMap.get(expositorIdStr) || `Expositor #${expositorIdStr}`;
+                    
+                    if (studentInfo.expositor === null) {
+                        expositorName = 'No asignado';
+                    }
+
+                    // ***** LÓGICA DE PRESENTACIÓN ACTUALIZADA *****
+                    const presentationEvaluators = evaluatorsMap.get(studentInfo.sala) || 'N/A';
+                    const presentationLocation = `<b>Sala de Pitch ${studentInfo.sala}</b><div class="evaluators-list">Evalúan:<br>${presentationEvaluators}</div>`;
+
+                    createActivity(studentInfo.presentationTime, 'Presentación de Proyectos', presentationLocation);
+                    createActivity(studentInfo.networkingTime, 'Mesa con Expositores', `Con: ${expositorName}`);
+                    createActivity(studentInfo.interviewTime, 'Entrevista Individual', `Con: ${interviewerName}`);
+
+                    studentActivities.sort((a,b) => new Date(a.start) - new Date(b.start));
+                    students[studentInfo.id] = { ...studentInfo, activities: studentActivities };
+                });
+
+                searchInput.disabled = false;
+                handleSearch(); 
+
+                if (isAdmin) {
+                    showAdminStatus('¡Datos guardados y actualizados!');
+                }
+            }
+
+            function showAdminStatus(message) {
+                adminStatus.textContent = message;
+                adminStatus.style.display = 'block';
+                setTimeout(() => adminStatus.style.display = 'none', 3000);
+            }
+
+            function handleSearch() {
+                const query = searchInput.value;
+                if (!query) {
+                     resultsContainer.innerHTML = '<p>Busca tu itinerario por ID o nombre.</p>';
+                    return;
+                }
+                const normalizedQuery = normalizeString(query);
+                const searchTerms = normalizedQuery.split(' ').filter(Boolean);
+
+                const filteredStudents = Object.values(students).filter(student => {
+                    const normalizedName = normalizeString(student.name);
+                    const normalizedId = normalizeString(student.id);
+
+                    if (normalizedId.includes(normalizedQuery)) return true;
+                    return searchTerms.every(term => normalizedName.includes(term));
+                });
+                renderResults(filteredStudents);
+            }
+
+            function renderResults(studentList) {
+                if (studentList.length === 0 && searchInput.value) { 
+                    resultsContainer.innerHTML = '<p>No se encontraron resultados.</p>';
+                    return;
+                }
+                 if (studentList.length === 0 && !searchInput.value){
+                     resultsContainer.innerHTML = '<p>Busca tu itinerario por ID o nombre.</p>';
+                     return;
+                 }
+                resultsContainer.innerHTML = studentList.map(student => renderStudentCard(student)).join('');
+            }
+
+            function renderStudentCard(student) {
+                const activitiesHtml = student.activities.length > 0
+                    ? `<table class="activity-table">
+                            <thead>
+                                <tr>
+                                    <th>Actividad</th>
+                                    <th>Horario</th>
+                                    <th>Lugar/Asignación</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${student.activities.map(activity => {
+                                    const activityData = { ...activity, studentName: student.name };
+                                    return `
+                                        <tr>
+                                            <td>${activity.title}</td>
+                                            <td>${formatDateRange(activity.start, activity.end)}</td>
+                                            <td>${activity.location}</td>
+                                            <td class="activity-actions">
+                                                <a href="${generateGoogleCalendarUrl(activityData)}" target="_blank" rel="noopener noreferrer" class="btn" title="Agregar a Google Calendar">
+                                                    <svg class="icon" style="width: 16px; height: 16px; margin-right: 5px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                                    Google Calendar
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>`
+                    : '<p>Sin actividades asignadas.</p>';
+
+                return `
+                    <div class="student-card">
+                        <div class="student-card-header">
+                            <div>
+                                <h3>${student.name}</h3>
+                                <span class="student-id">(${student.id})</span><br>
+                                <span class="student-prof">Profesor: ${student.profesor || 'N/A'}</span>
+                            </div>
+                            <span class="student-team">Equipo ${student.team}</span>
+                        </div>
+                        ${activitiesHtml}
+                    </div>`;
+            }
+
+            function generateGoogleCalendarUrl(activity) {
+                const text = encodeURIComponent(activity.title);
+                const location = encodeURIComponent(activity.location);
+                const details = encodeURIComponent(`Itinerario para ${activity.studentName}`);
+                const dates = `${formatICSDate(new Date(activity.start))}/${formatICSDate(new Date(activity.end))}`;
+                return `https://www.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${dates}&location=${location}&details=${details}`;
+            }
+
+            function normalizeString(str) { return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+            function formatDateRange(start, end) {
+                const opts = { hour: '2-digit', minute: '2-digit', timeZone: TIMEZONE };
+                return `${new Date(start).toLocaleTimeString('es-MX', opts)} - ${new Date(end).toLocaleTimeString('es-MX', opts)}`;
+            }
+            function formatICSDate(date) { return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'; }
+
+            initApp();
+        });
+    </script>
+</body>
+</html>
