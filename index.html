@@ -123,8 +123,7 @@
         .admin-controls button.secondary { background-color: var(--secondary-color); font-size: 16px; width: 100%; margin-top: 20px; }
 
         .staff-grid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 25px;}
-        /* MODIFICADO: Rejilla responsiva para 1, 2, o 3 columnas */
-        @media (min-width: 768px) { .staff-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); } }
+        @media (min-width: 768px) { .staff-grid { grid-template-columns: 1fr 1fr; } }
 
         .admin-card {
              background-color: var(--background-color);
@@ -181,18 +180,11 @@
                         <button id="add-interviewer-btn">Añadir Entrevistador</button>
                     </div>
                 </div>
-                <div class="admin-card" id="staff-editor-expositors">
+      _         <div class="admin-card" id="staff-editor-expositors">
                     <h4>Expositores</h4>
                     <div class="admin-table-wrapper" id="expositors-table-container"></div>
                     <div class="admin-controls">
                         <button id="add-expositor-btn">Añadir Expositor</button>
-                    </div>
-                </div>
-                                <div class="admin-card" id="staff-editor-pitch">
-                    <h4>Expertos de Pitch</h4>
-                    <div class="admin-table-wrapper" id="pitch-table-container"></div>
-                    <div class="admin-controls">
-                        <button id="add-pitch-btn">Añadir Experto</button>
                     </div>
                 </div>
             </div>
@@ -208,30 +200,28 @@
         document.addEventListener('DOMContentLoaded', () => {
             let students = {};
             const TIMEZONE = 'America/Mexico_City';
-            const MASTER_DATA_KEY = 'talentCampMasterData_v3'; // Clave sin cambios
+            // ***** CAMBIO CLAVE: Se cambió el nombre de la llave para forzar la actualización de datos *****
+            const MASTER_DATA_KEY = 'talentCampMasterData_v3';
 
             // DOM Elements
             const searchInput = document.getElementById('search-input');
             const resultsContainer = document.getElementById('results-container');
             const configSection = document.querySelector('.config-section');
             const adminTableContainer = document.getElementById('admin-table-container');
-            const addStudentBtn = document.getElementById('add-student-btn');
+        _   const addStudentBtn = document.getElementById('add-student-btn');
             const saveDataBtn = document.getElementById('save-data-btn');
             const adminStatus = document.getElementById('admin-status');
             const interviewersTableContainer = document.getElementById('interviewers-table-container');
             const addInterviewerBtn = document.getElementById('add-interviewer-btn');
             const expositorsTableContainer = document.getElementById('expositors-table-container');
             const addExpositorBtn = document.getElementById('add-expositor-btn');
-            // AÑADIDO: DOM Elements para Pitch
-            const pitchTableContainer = document.getElementById('pitch-table-container');
-            const addPitchBtn = document.getElementById('add-pitch-btn');
 
             // ==============================================================================
-            // BASE DE DATOS INICIAL COMPLETA
+            // BASE DE DATOS INICIAL COMPLETA (Basada en TALENT CAMP 3.0.pdf)
             // ==============================================================================
             const initialMasterData = {
                 students: [
-                    // ... (toda la lista de estudiantes permanece igual) ...
+                    // --- Equipo 1 (Del Rio) ---
                     { id: '578939', name: 'Bello Martinez Emiliano', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '9:55-10:15', entrevistador: 1, networkingTime: '10:25-11:00', expositor: 1 },
                     { id: '524719', name: 'de la Rosa Burgos Alvaro Alejandro', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '9:55-10:15', entrevistador: 2, networkingTime: '10:25-11:00', expositor: 2 },
                     { id: '523828', name: 'Diaz Mayo José Pablo', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '9:55-10:15', entrevistador: 3, networkingTime: '10:25-11:00', expositor: 3 },
@@ -239,55 +229,67 @@
                     { id: '464515', name: 'Monterrosas Mirón Karla Antonia', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '9:55-10:15', entrevistador: 5, networkingTime: '10:25-11:00', expositor: 5 },
                     { id: '545786', name: 'Peniche Pérez Esteban', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 1, networkingTime: '10:25-11:00', expositor: 1 },
                     { id: '525597', name: 'Tejeda Flores Zara Valentina', profesor: 'Del Rio', team: 1, presentationTime: '9:15-9:35', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 2, networkingTime: '10:25-11:00', expositor: 2 },
+                    // --- Equipo 2 (Lechuga) ---
                     { id: '543019', name: 'Briones Quiyono Ana Sofia', profesor: 'Lechuga', team: 2, presentationTime: '9:15-9:35', sala: 'B', interviewTime: '9:55-10:15', entrevistador: 6, networkingTime: '10:25-11:00', expositor: 3 },
                     { id: '530047', name: 'Camarillo Sánchez Juan Alberto', profesor: 'Lechuga', team: 2, presentationTime: '9:15-9:35', sala: 'B', interviewTime: '9:55-10:15', entrevistador: 7, networkingTime: '10:25-11:00', expositor: 4 },
                     { id: '562237', name: 'Campuzano Silva Monserrat', profesor: 'Lechuga', team: 2, presentationTime: '9:15-9:35', sala: 'B', interviewTime: '9:55-10:15', entrevistador: 8, networkingTime: '10:25-11:00', expositor: 5 },
                     { id: '549936', name: 'Enriquez Colchado Emilio', profesor: 'Lechuga', team: 2, presentationTime: '9:15-9:35', sala: 'B', interviewTime: '9:55-10:15', entrevistador: 9, networkingTime: '10:25-11:00', expositor: 1 },
                     { id: '571685', name: 'Félix Aizpuru Maximiliano', profesor: 'Lechuga', team: 2, presentationTime: '9:15-9:35', sala: 'B', interviewTime: '9:55-10:15', entrevistador: 10, networkingTime: '10:25-11:00', expositor: 2 },
+                    // --- Equipo 3 (Lechuga) ---
                     { id: '574765', name: 'Flores Arcos Jesús Amauri', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '9:15-9:35', entrevistador: 1, networkingTime: '10:25-11:00', expositor: 3 },
                     { id: '543066', name: 'Forcelledo Bledi Carlota', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '9:15-9:35', entrevistador: 2, networkingTime: '10:25-11:00', expositor: 4 },
                     { id: '569121', name: 'Garrido del Valle Emiliano', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '9:15-9:35', entrevistador: 3, networkingTime: '10:25-11:00', expositor: 5 },
-        _           { id: '493870', name: 'Gutiérrez Jiménez Jael Ricardo', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 3, networkingTime: '11:00-11:35', expositor: null },
+                    { id: '493870', name: 'Gutiérrez Jiménez Jael Ricardo', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 3, networkingTime: '11:00-11:35', expositor: null },
                     { id: '492520', name: 'Hernández López Francisco', profesor: 'Lechuga', team: 3, presentationTime: '9:40-10:00', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 4, networkingTime: '11:00-11:35', expositor: 2 },
+                    // --- Equipo 4 (Lechuga) ---
                     { id: '531714', name: 'Jiménez González Victor Manuel', profesor: 'Lechuga', team: 4, presentationTime: '9:40-10:00', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 4, networkingTime: '10:25-11:00', expositor: 3 },
                     { id: '571883', name: 'Limón Mata Alexa', profesor: 'Lechuga', team: 4, presentationTime: '9:40-10:00', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 5, networkingTime: '10:25-11:00', expositor: 4 },
                     { id: '544679', name: 'Lira González Adalberto', profesor: 'Lechuga', team: 4, presentationTime: '9:40-10:00', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 6, networkingTime: '10:25-11:00', expositor: 5 },
                     { id: '552509', name: 'Moreno Flores Karen Ayari', profesor: 'Lechuga', team: 4, presentationTime: '9:40-10:00', sala: 'B', interviewTime: '10:15-10:35', entrevistador: 5, networkingTime: '11:00-11:35', expositor: null },
                     { id: '557695', name: 'Navarrete Flores Emiliano', profesor: 'Lechuga', team: 4, presentationTime: '9:40-10:00', sala: 'B', interviewTime: '10:15-10:35', entrevistador: 6, networkingTime: '11:00-11:35', expositor: 2 },
+                    // --- Equipo 5 (Lechuga) ---
                     { id: '582580', name: 'Olaya Camela Claudia', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:15-9:35', entrevistador: 7, networkingTime: '11:00-11:35', expositor: 3 },
                     { id: '495238', name: 'Pineda Bello lan Miguel', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:15-9:35', entrevistador: 8, networkingTime: '11:00-11:35', expositor: 4 },
                     { id: '561988', name: 'Ramirez Vera Kevin Samuel', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 1, networkingTime: '11:00-11:35', expositor: 5 },
                     { id: '550267', name: 'Saint Martin Sosa Diego', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 2, networkingTime: '11:00-11:35', expositor: 1 },
-                    { id: '508475', name: 'Salazar Huerta Rodrigo', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 3, networkingTime: '11:00-11:35', expositor: 2 },
+    _               { id: '508475', name: 'Salazar Huerta Rodrigo', profesor: 'Lechuga', team: 5, presentationTime: '10:05-10:25', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 3, networkingTime: '11:00-11:35', expositor: 2 },
+                    // --- Equipo 6 (Lechuga) ---
                     { id: '563340', name: 'Sánchez Dominguez Santiago', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 9, networkingTime: '11:00-11:35', expositor: 3 },
                     { id: '441251', name: 'Soriano Vergara Pedro', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:15-9:35', entrevistador: 10, networkingTime: '11:00-11:35', expositor: 4 },
-                    { id: '535961', name: 'Torres Sánchez Luis Carlos', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 4, networkingTime: '11:00-11:35', expositor: 5 },
+                    { id: '535961', name: 'Torres Sánchez Luis Carlos', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 4, networkingTime: '11:00-11:35', expositor: 5 }, // Corregido 'S' a 5
                     { id: '557721', name: 'Vega Ibarra Angel Abraham', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 5, networkingTime: '11:00-11:35', expositor: 1 },
                     { id: '571014', name: 'Zermeño Sánchez Tonatiuh', profesor: 'Lechuga', team: 6, presentationTime: '10:05-10:25', sala: 'B', interviewTime: '9:35-9:55', entrevistador: 6, networkingTime: '11:00-11:35', expositor: 2 },
+                    // --- Equipo 7 (Luna) ---
                     { id: '565156', name: 'Alonso Farfan Mikel Javier', profesor: 'Luna', team: 7, presentationTime: '10:30-10:50', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 7, networkingTime: '9:50-10:25', expositor: 1 },
                     { id: '382999', name: 'Alvarez Santiago Cristhian Rafael', profesor: 'Luna', team: 7, presentationTime: '10:30-10:50', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 8, networkingTime: '9:50-10:25', expositor: 2 },
                     { id: '549581', name: 'Arroyo Vargas Hanna Janette', profesor: 'Luna', team: 7, presentationTime: '10:30-10:50', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 9, networkingTime: '9:50-10:25', expositor: 3 },
                     { id: '569010', name: 'Aymerich Bringas José Luis', profesor: 'Luna', team: 7, presentationTime: '10:30-10:50', sala: 'A', interviewTime: '9:35-9:55', entrevistador: 10, networkingTime: '9:50-10:25', expositor: 4 },
                     { id: '433549', name: 'Colmeriares Barrera Bruno', profesor: 'Luna', team: 7, presentationTime: '10:30-10:50', sala: 'A', interviewTime: '10:15-10:35', entrevistador: 7, networkingTime: '9:50-10:25', expositor: 5 },
+                    // --- Equipo 8 (Luna) ---
                     { id: '576469', name: 'Cruz Cruz Daira', profesor: 'Luna', team: 8, presentationTime: '10:30-10:50', sala: 'B', interviewTime: '10:15-10:35', entrevistador: 8, networkingTime: '9:50-10:25', expositor: 1 },
                     { id: '527134', name: 'Deloya González Guillermo', profesor: 'Luna', team: 8, presentationTime: '10:30-10:50', sala: 'B', interviewTime: '10:15-10:35', entrevistador: 9, networkingTime: '9:50-10:25', expositor: 2 },
                     { id: '589649', name: 'Espejel Ramos Diego', profesor: 'Luna', team: 8, presentationTime: '10:30-10:50', sala: 'B', interviewTime: '10:15-10:35', entrevistador: 10, networkingTime: '9:50-10:25', expositor: 3 },
                     { id: '563562', name: 'Garcia Romero Antonio Salvador', profesor: 'Luna', team: 8, presentationTime: '10:30-10:50', sala: 'B', interviewTime: '10:35-10:55', entrevistador: 1, networkingTime: '9:50-10:25', expositor: 4 },
                     { id: '561018', name: 'Gómez Sobrino José Luis', profesor: 'Luna', team: 8, presentationTime: '10:30-10:50', sala: 'B', interviewTime: '10:35-10:55', entrevistador: 2, networkingTime: '9:50-10:25', expositor: 5 },
+                    // --- Equipo 9 (Luna) ---
                     { id: '558588', name: 'Huerta Mendoza Raúl', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 3, networkingTime: '9:15-9:50', expositor: 1 },
                     { id: '476946', name: 'Merlin Hernández Aishly Ximena', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 4, networkingTime: '9:15-9:50', expositor: 2 },
                     { id: '588640', name: 'Monroy Garcia Misael Matias', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 5, networkingTime: '9:15-9:50', expositor: 3 },
-                    { id: '584073', name: 'Ochoa Ramirez Julián', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:Details       { id: '560560', name: 'Olvera Quintanar Mario Santiago', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 7, networkingTime: '9:15-9:50', expositor: 5 },
+                    { id: '584073', name: 'Ochoa Ramirez Julián', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 6, networkingTime: '9:15-9:50', expositor: 4 },
+                    { id: '560560', name: 'Olvera Quintanar Mario Santiago', profesor: 'Luna', team: 9, presentationTime: '10:55-11:15', sala: 'A', interviewTime: '10:35-10:55', entrevistador: 7, networkingTime: '9:15-9:50', expositor: 5 },
+                    // --- Equipo 10 (Luna) ---
                     { id: '449964', name: 'Ortega Rosario Erika Gabriela', profesor: 'Luna', team: 10, presentationTime: '10:55-11:15', sala: 'B', interviewTime: '10:35-10:55', entrevistador: 8, networkingTime: '9:15-9:50', expositor: 1 },
                     { id: '571035', name: 'Osorio Vázquez Laura', profesor: 'Luna', team: 10, presentationTime: '10:55-11:15', sala: 'B', interviewTime: '10:35-10:55', entrevistador: 9, networkingTime: '9:15-9:50', expositor: 2 },
                     { id: '566072', name: 'Payalaf de Gasperin Oscar Daniel', profesor: 'Luna', team: 10, presentationTime: '10:55-11:15', sala: 'B', interviewTime: '10:35-10:55', entrevistador: 10, networkingTime: '9:15-9:50', expositor: 3 },
                     { id: '483215', name: 'Pérez Amezcua Travis David', profesor: 'Luna', team: 10, presentationTime: '10:55-11:15', sala: 'B', interviewTime: '10:55-11:15', entrevistador: 1, networkingTime: '9:15-9:50', expositor: 4 },
                     { id: '579993', name: 'Ramirez Castañón Gabriela', profesor: 'Luna', team: 10, presentationTime: '10:55-11:15', sala: 'B', interviewTime: '10:55-11:15', entrevistador: 2, networkingTime: '9:15-9:50', expositor: 5 },
+                    // --- Equipo 11 (Luna) ---
                     { id: '562176', name: 'Ramírez Hernández José Vladimir', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 3, networkingTime: '9:15-9:50', expositor: null },
                     { id: '565874', name: 'Ramírez Rodríguez Diego Antonio', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 4, networkingTime: '9:15-9:50', expositor: 2 },
                     { id: '552919', name: 'Rámos Cano Diego Estevan', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 5, networkingTime: '9:15-9:50', expositor: 3 },
                     { id: '561342', name: 'Robles Muñiz Valeria', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 6, networkingTime: '9:15-9:50', expositor: 4 },
-                    { id: '556562', name: 'Rodriguez Romero Mayte', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 7, networkingTime: '9:15-9:50', expositor: 5 },
+                    { id: '556562', name: 'Rodriguez Romero Mayte', profesor: 'Luna', team: 11, presentationTime: '11:20-11:40', sala: 'A', interviewTime: '10:55-11:15', entrevistador: 7, networkingTime: '9:15-9:50', expositor: 5 }, // Corregido team de 17 a 11
+                    // --- Equipo 12 (Luna) ---
                     { id: '514530', name: 'Rojas Garcia Lucia', profesor: 'Luna', team: 12, presentationTime: '11:20-11:40', sala: 'B', interviewTime: '10:55-11:15', entrevistador: 8, networkingTime: '9:15-9:50', expositor: 1 },
                     { id: '552094', name: 'Sánchez Rojas Emanuel', profesor: 'Luna', team: 12, presentationTime: '11:20-11:40', sala: 'B', interviewTime: '10:55-11:15', entrevistador: 9, networkingTime: '9:15-9:50', expositor: 2 },
                     { id: '554124', name: 'Santiago Morales Arantza Gabriela', profesor: 'Luna', team: 12, presentationTime: '11:20-11:40', sala: 'B', interviewTime: '10:55-11:15', entrevistador: 10, networkingTime: '9:15-9:50', expositor: 3 },
@@ -295,31 +297,23 @@
                     { id: '494379', name: 'Vázquez Falcón lan Moisés', profesor: 'Luna', team: 12, presentationTime: '11:20-11:40', sala: 'B', interviewTime: '11:15-11:35', entrevistador: 2, networkingTime: '9:15-9:50', expositor: 5 },
                 ],
                 interviewers: [
-                    { id: 1, name: 'Evelina García Malpica' }, 
-                    { id: 2, name: 'Gabriela Vázquez' }, 
-                    { id: 3, name: 'Berenice Ortiz Gutiérrez / Andrea Fernanda Santillana Pérez' }, 
-                    { id: 4, name: 'Anabertha Luna Martínez' }, 
-                    { id: 5, name: 'Roberto Gonzaga Gómez Haro' }, 
-                    { id: 6, name: 'Hernán Álcantara Martínez / Ezequiel Lopez Olalde' }, 
-                    { id: 7, name: 'Claudia Tapia Guerrero' }, 
-                    { id: 8, name: 'Carmen Argelia Rodríguez Cano' }, 
-                    { id: 9, name: 'Silvia González Muñoz' }, 
-                    { id: 10, name: 'Angel Báez Mendoza / Verónica Treviño' } 
+                    { id: 1, name: 'Evelina García Malpica' }, // [cite: 15]
+                    { id: 2, name: 'Gabriela Vázquez' }, // [cite: 16]
+                    { id: 3, name: 'Berenice Ortiz Gutiérrez / Andrea Fernanda Santillana Pérez' }, // [cite: 17]
+                    { id: 4, name: 'Anabertha Luna Martínez' }, // [cite: 18]
+                    { id: 5, name: 'Roberto Gonzaga Gómez Haro' }, // [cite: 19]
+                    { id: 6, name: 'Hernán Álcantara Martínez / Ezequiel Lopez Olalde' }, // [cite: 20]
+                    { id: 7, name: 'Claudia Tapia Guerrero' }, // [cite: 21]
+                    { id: 8, name: 'Carmen Argelia Rodríguez Cano' }, // [cite: 22]
+                    { id: 9, name: 'Silvia González Muñoz' }, // [cite: 23]
+                    { id: 10, name: 'Angel Báez Mendoza / Verónica Treviño' } // [cite: 24]
                 ],
                 expositors: [
-                    { id: 1, name: 'Ramon Ballesteros' }, 
-                    { id: 2, name: 'Mariana Maldonado Quiroz' }, 
-                    { id: 3, name: 'Marcelo Álvarez Hernández' }, 
-                    { id: 4, name: 'Cesar Greda Juárez' }, 
-                    { id: 5, name: 'Gabriela Peña Peralta' } 
-},
-                ],
-                // AÑADIDO: Expertos de Pitch
-                pitchExperts: [
-                    { id: 'A', name: 'Mónica Cabrera Piña' },
-                    { id: 'A', name: 'María Lourdes Murrieta' },
-                    { id: 'B', name: 'Sofía Eréndira Vallines' },
-                    { id: 'B', name: 'José Manuel Grajales López' }
+              _       { id: 1, name: 'Ramon Ballesteros' }, // [cite: 2]
+                    { id: 2, name: 'Mariana Maldonado Quiroz' }, // [cite: 3]
+                    { id: 3, name: 'Marcelo Álvarez Hernández' }, // [cite: 4]
+                    { id: 4, name: 'Cesar Greda Juárez' }, // [cite: 5]
+                    { id: 5, name: 'Gabriela Peña Peralta' } // [cite: 6]
                 ]
             };
 
@@ -337,7 +331,6 @@
                 addStudentBtn.addEventListener('click', () => addRowToTable('admin-table'));
                 addInterviewerBtn.addEventListener('click', () => addRowToTable('interviewers-table'));
                 addExpositorBtn.addEventListener('click', () => addRowToTable('expositors-table'));
-                addPitchBtn.addEventListener('click', () => addRowToTable('pitch-table')); // AÑADIDO
                 saveDataBtn.addEventListener('click', saveAndProcessData);
 
                 configSection.addEventListener('click', (e) => {
@@ -355,34 +348,32 @@
                     renderAdminTables(data);
                 }
                 processSchedules(data);
-A         }
+            }
 
             function renderAdminTables(data) {
                 renderStudentTable(data.students);
-                // MODIFICADO: Llamadas a renderStaffTable actualizadas
-                renderStaffTable('interviewers-table-container', data.interviewers, [{key: 'id', label: 'ID'}, {key: 'name', label: 'Nombre'}]);
-                renderStaffTable('expositors-table-container', data.expositors, [{key: 'id', label: 'ID'}, {key: 'name', label: 'Nombre'}]);
-                renderStaffTable('pitch-table-container', data.pitchExperts, [{key: 'id', label: 'Sala (A/B)'}, {key: 'name', label: 'Nombre'}]);
+                renderStaffTable('interviewers-table-container', data.interviewers, ['ID', 'Nombre']);
+                renderStaffTable('expositors-table-container', data.expositors, ['ID', 'Nombre']);
             }
 
             function renderStudentTable(studentList) {
                 const table = document.createElement('table');
                 table.id = 'admin-table';
-                table.classList.add('admin-table'); 
+                table.classList.add('admin-table'); // Añadir clase para estilos
                 table.innerHTML = `
                     <thead>
                         <tr>
                             <th>ID</th><th>Nombre</th><th>Profesor</th><th>Equipo</th><th>Presentación</th><th>Sala</th><th>Entrevista</th><th>Entrevistador (ID)</th><th>Mesa Redonda</th><th>Expositor (ID)</th><th>Acción</th>
                         </tr>
                     </thead>
-                  t <tbody>
+                    <tbody>
                         ${studentList.map(s => `
                             <tr>
                                 <td contenteditable="true">${s.id}</td>
                                 <td contenteditable="true">${s.name}</td>
                                 <td contenteditable="true">${s.profesor}</td>
                                 <td contenteditable="true">${s.team}</td>
-                                <td contenteditable="true">${s.presentationTime}</td>
+                _               <td contenteditable="true">${s.presentationTime}</td>
                                 <td contenteditable="true">${s.sala}</td>
                                 <td contenteditable="true">${s.interviewTime}</td>
                                 <td contenteditable="true">${s.entrevistador}</td>
@@ -396,19 +387,17 @@ A         }
                 adminTableContainer.appendChild(table);
             }
 
-            // MODIFICADO: renderStaffTable ahora usa un objeto de cabeceras para ser flexible
             function renderStaffTable(containerId, staffList, headers) {
-                // headers es ahora un array de objetos: [{key: 'id', label: 'ID'}, {key: 'name', label: 'Nombre'}]
                 const container = document.getElementById(containerId);
                 const table = document.createElement('table');
                 table.id = containerId.replace('-container', '');
-                table.classList.add('admin-table'); 
+                table.classList.add('admin-table'); // Añadir clase para estilos
                 table.innerHTML = `
-                    <thead><tr>${headers.map(h => `<th>${h.label}</th>`).join('')}<th>Acción</th></tr></thead>
+                    <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}<th>Acción</th></tr></thead>
                     <tbody>
                         ${staffList.map(item => `
                             <tr>
-                                ${headers.map(h => `<td contenteditable="true">${item[h.key] !== null ? item[h.key] : ''}</td>`).join('')}
+                                ${headers.map(h => `<td contenteditable="true">${item[h.toLowerCase()]}</td>`).join('')}
                                 <td><button class="delete-row-btn">&times;</button></td>
                             </tr>`).join('')}
                     </tbody>`;
@@ -431,13 +420,11 @@ A         }
                 const studentList = getTableData('admin-table', ['id', 'name', 'profesor', 'team', 'presentationTime', 'sala', 'interviewTime', 'entrevistador', 'networkingTime', 'expositor']);
                 const interviewersList = getTableData('interviewers-table', ['id', 'name']);
                 const expositorsList = getTableData('expositors-table', ['id', 'name']);
-                const pitchExpertsList = getTableData('pitch-table', ['id', 'name']); // AÑADIDO
 
                 const masterData = {
                     students: studentList,
                     interviewers: interviewersList,
-                    expositors: expositorsList,
-                    pitchExperts: pitchExpertsList // AÑADIDO
+                    expositors: expositorsList
                 };
 
                 localStorage.setItem(MASTER_DATA_KEY, JSON.stringify(masterData));
@@ -452,49 +439,47 @@ A         }
                     const item = {};
                     keys.forEach((key, i) => {
                         let value = cells[i]?.textContent.trim() || '';
+                        // Convertir a número si es relevante, o null si está vacío
                         if (key === 'team' || key === 'entrevistador' || key === 'expositor') {
-                            item[key] = value === '' ? null : parseInt(value) || value; 
+                            item[key] = value === '' ? null : parseInt(value) || value; // Mantener como string si no es un número (aunque deberían serlo)
                         } else {
                             item[key] = value;
-                        }
+available_tools:                   }
                     });
                     data.push(item);
                 });
-                return data;
+  _           return data;
             }
             
             function cleanTime(timeStr) {
                 if (!timeStr || !timeStr.includes('-')) return null;
-                let [startStr, endStr] = timeStr.split('-').map(s => s.trim().replace(/:/g, '')); 
-                if (startStr.length === 3) startStr = `0${startStr}`;
+                
+                let [startStr, endStr] = timeStr.split('-').map(s => s.trim().replace(/:/g, '')); // Quita : y espacios
+                
+                // Corregir horas como '955' a '0955'
+          _       if (startStr.length === 3) startStr = `0${startStr}`;
                 if (endStr.length === 3) endStr = `0${endStr}`;
+
+                // Volver a formatear a HH:MM
                 if (startStr.length === 4) startStr = `${startStr.slice(0, 2)}:${startStr.slice(2)}`;
                 if (endStr.length === 4) endStr = `${endStr.slice(0, 2)}:${endStr.slice(2)}`;
-                if (!startStr.includes(':') || !endStr.includes(':')) return null; 
+
+                if (!startStr.includes(':') || !endStr.includes(':')) return null; // No válida
+         _       
                 return `${startStr} - ${endStr}`;
             }
 
-            // MODIFICADO: processSchedules ahora usa los datos de pitchExperts
             function processSchedules(data) {
                 students = {};
                 const interviewersMap = new Map(data.interviewers.map(i => [i.id.toString(), i.name]));
-        _       const expositorsMap = new Map(data.expositors.map(e => [e.id.toString(), e.name]));
-
-                // AÑADIDO: Crear un mapa para los expertos de pitch
-                const pitchExpertsMap = new Map();
-                data.pitchExperts.forEach(expert => {
-                    if (!pitchExpertsMap.has(expert.id)) {
-                        pitchExpertsMap.set(expert.id, []);
-                    }
-                    pitchExpertsMap.get(expert.id).push(expert.name);
-                });
+                const expositorsMap = new Map(data.expositors.map(e => [e.id.toString(), e.name]));
 
                 data.students.forEach(studentInfo => {
-                    const studentActivities = [];
+   _               const studentActivities = [];
 
-                    const createActivity = (timeRange, title, location) => {
-                        const cleanedTime = cleanTime(timeRange); 
-                        if (!cleanedTime) return; 
+          _         const createActivity = (timeRange, title, location) => {
+                        const cleanedTime = cleanTime(timeRange); // Limpiar el string de hora
+                        if (!cleanedTime) return; // No crear actividad si la hora no es válida
 
                         const [startStr, endStr] = cleanedTime.split('-').map(s => s.trim());
                         const [startH, startM] = startStr.split(':');
@@ -502,10 +487,11 @@ A         }
 
                         const startDate = new Date();
                         startDate.setHours(parseInt(startH), parseInt(startM), 0, 0);
+
                         const endDate = new Date();
                         endDate.setHours(parseInt(endH), parseInt(endM), 0, 0);
 
-                        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return; 
+                        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return; // Fecha inválida
 
                         studentActivities.push({ title, location, start: startDate.toISOString(), end: endDate.toISOString() });
                     };
@@ -520,18 +506,12 @@ A         }
                         expositorName = 'No asignado';
                     }
 
-                    // MODIFICADO: Se añaden los nombres de los expertos de pitch a la ubicación
-                    const pitchSala = studentInfo.sala; // 'A' or 'B'
-                    const expertNames = pitchExpertsMap.get(pitchSala) || [];
-                    const expertNamesStr = expertNames.length > 0 ? ` (Con: ${expertNames.join(', ')})` : '';
-                    const pitchLocation = `Sala de Pitch ${pitchSala}${expertNamesStr}`;
-
-                    createActivity(studentInfo.presentationTime, 'Presentación de Proyectos', pitchLocation);
-                    createActivity(studentInfo.networkingTime, 'Mesa con Expositores', `Con: ${expositorName}`);
+                    createActivity(studentInfo.presentationTime, 'Presentación de Proyectos', `Sala de Pitch ${studentInfo.sala}`);
+A                   createActivity(studentInfo.networkingTime, 'Mesa con Expositores', `Con: ${expositorName}`);
                     createActivity(studentInfo.interviewTime, 'Entrevista Individual', `Con: ${interviewerName}`);
 
                     studentActivities.sort((a,b) => new Date(a.start) - new Date(b.start));
-boxes               students[studentInfo.id] = { ...studentInfo, activities: studentActivities };
+                    students[studentInfo.id] = { ...studentInfo, activities: studentActivities };
                 });
 
                 searchInput.disabled = false;
@@ -539,7 +519,7 @@ boxes               students[studentInfo.id] = { ...studentInfo, activiti
 
                 if (isAdmin) {
                     showAdminStatus('¡Datos guardados y actualizados!');
-nbsp;           }
+          _       }
             }
 
             function showAdminStatus(message) {
@@ -552,7 +532,7 @@ nbsp;           }
                 const query = searchInput.value;
                 if (!query) {
                      resultsContainer.innerHTML = '<p>Busca tu itinerario por ID o nombre.</p>';
-                    return;
+nbsp;               return;
                 }
                 const normalizedQuery = normalizeString(query);
                 const searchTerms = normalizedQuery.split(' ').filter(Boolean);
@@ -565,18 +545,18 @@ nbsp;           }
                     return searchTerms.every(term => normalizedName.includes(term));
                 });
                 renderResults(filteredStudents);
-A         }
+            }
 
             function renderResults(studentList) {
                 if (studentList.length === 0 && searchInput.value) { 
                     resultsContainer.innerHTML = '<p>No se encontraron resultados.</p>';
-                    return;
+return;
                 }
                  if (studentList.length === 0 && !searchInput.value){
                      resultsContainer.innerHTML = '<p>Busca tu itinerario por ID o nombre.</p>';
                      return;
                  }
-            _   resultsContainer.innerHTML = studentList.map(student => renderStudentCard(student)).join('');
+                resultsContainer.innerHTML = studentList.map(student => renderStudentCard(student)).join('');
             }
 
             function renderStudentCard(student) {
@@ -588,24 +568,24 @@ A         }
                                     <th>Horario</th>
                                     <th>Lugar/Asignación</th>
                                     <th>Acción</th>
-                                </tr>
+s                             </tr>
                             </thead>
                             <tbody>
                                 ${student.activities.map(activity => {
-                          _         const activityData = { ...activity, studentName: student.name };
+                                    const activityData = { ...activity, studentName: student.name };
                                     return `
                                         <tr>
-is                                       <td>${activity.title}</td>
+e                                         <td>${activity.title}</td>
                                             <td>${formatDateRange(activity.start, activity.end)}</td>
-                                            <td>${activity.location}</td>
+d                                         <td>${activity.location}</td>
                                             <td class="activity-actions">
 color:                                         <a href="${generateGoogleCalendarUrl(activityData)}" target="_blank" rel="noopener noreferrer" class="btn" title="Agregar a Google Calendar">
-                                                    <svg class="icon" style="width: 16px; height: 16px; margin-right: 5px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                                    Google Calendar
-m                                           </a>
+                                          s         <svg class="icon" style="width: 16px; height: 16px; margin-right: 5px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            nbsp;                   Google Calendar
+                                                </a>
                                             </td>
                                         </tr>
-s                               `;
+                                    `;
                                 }).join('')}
                             </tbody>
                         </table>`
@@ -613,14 +593,14 @@ s                               `;
 
                 return `
                     <div class="student-card">
-content                     <div class="student-card-header">
+                        <div class="student-card-header">
                             <div>
                                 <h3>${student.name}</h3>
-sales                           <span class="student-id">(${student.id})</span><br>
+script-transclusion                             <span class="student-id">(${student.id})</span><br>
                                 <span class="student-prof">Profesor: ${student.profesor || 'N/A'}</span>
                             </div>
-                    "       <span class="student-team">Equipo ${student.team}</span>
-                        </div>
+                            <span class="student-team">Equipo ${student.team}</span>
+available-targets_                   </div>
                         ${activitiesHtml}
                     </div>`;
             }
@@ -636,11 +616,11 @@ A               const dates = `${formatICSDate(new Date(activity.start))}
             function normalizeString(str) { return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
             function formatDateRange(start, end) {
                 const opts = { hour: '2-digit', minute: '2-digit', timeZone: TIMEZONE };
-                return `${new Date(start).toLocaleTimeString('es-MX', opts)} - ${new Date(end).toLocaleTimeString('es-MX', opts)}`;
+_               return `${new Date(start).toLocaleTimeString('es-MX', opts)} - ${new Date(end).toLocaleTimeString('es-MX', opts)}`;
             }
             function formatICSDate(date) { return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'; }
 
-s         initApp();
+            initApp();
         });
     </script>
 </body>
